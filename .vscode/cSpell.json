@@ -1,0 +1,64 @@
+// cSpell Settings
+{
+    // Version of the setting file.  Always 0.1
+    "version": "0.1",
+    // language - current active spelling language
+    "language": "en",
+    // words - list of words to be always considered correct
+    "words": [
+        "numpy",
+        "itertools",
+        "scipy",
+        "ndimage",
+        "pytorch",
+        "dtype",
+        "tcav",
+        "imgs",
+        "cuda",
+        "parallelization",
+        "pyplot",
+        "sklearn",
+        "coef",
+        "imshow",
+        "uint",
+        "cavs",
+        "hparam",
+        "hparams",
+        "conv",
+        "relu",
+        "logit",
+        "vals",
+        "randn",
+        "yapf",
+        "inplace",
+        "optim",
+        "cifar",
+        "convolutional",
+        "unpool",
+        "pylint",
+        "coefs",
+        "ttest",
+        "stds",
+        "arange",
+        "ylabel",
+        "xticks",
+        "asarray",
+        "exps",
+        "sexp",
+        "sexpdata",
+        "lstm",
+        "mnist",
+        "lenet",
+        "simi",
+        "Tanimoto",
+        "Chebyshev",
+        "Minkowski",
+        "indexs"
+    ],
+    // flagWords - list of words to be always considered incorrect
+    // This is useful for offensive words and common spelling errors.
+    // For example "hte" should be "the"
+    "flagWords": [
+        "hte"
+    ]
+}

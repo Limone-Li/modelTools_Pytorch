@@ -1,0 +1,102 @@
+{
+    "editor.suggestSelection": "first",
+    "editor.cursorStyle": "block",
+    "editor.formatOnSave": true,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "python.jediEnabled": false,
+    "python.pythonPath": "/Users/liruiyi/opt/anaconda3/envs/pytorch-env/bin/python",
+    "python.formatting.provider": "yapf",
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--ignore=E24,W504,F401,E126,E131,E125,W503,E402",
+        "--verbose",
+        "--max-line-length=120",
+    ],
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "editor.largeFileOptimizations": false,
+    "workbench.iconTheme": "vscode-icons",
+    "vim.easymotion": true,
+    "vim.sneak": true,
+    "vim.incsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.useCtrlKeys": true,
+    "vim.hlsearch": true,
+    "vim.insertModeKeyBindings": [
+        {
+            "before": [
+                "j",
+                "j"
+            ],
+            "after": [
+                "<Esc>"
+            ]
+        }
+    ],
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "<leader>",
+                "d"
+            ],
+            "after": [
+                "d",
+                "d"
+            ]
+        },
+        {
+            "before": [
+                "<C-n>"
+            ],
+            "commands": [
+                ":nohl"
+            ]
+        },
+        {
+            "before": [
+                "<leader>",
+                "m"
+            ],
+            "commands": [
+                "bookmarks.toggle"
+            ]
+        },
+        {
+            "before": [
+                "<leader>",
+                "b"
+            ],
+            "commands": [
+                "bookmarks.list"
+            ]
+        }
+    ],
+    "vim.handleKeys": {
+        "<C-a>": false,
+        "<C-f>": false
+    },
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                ">"
+            ],
+            "commands": [
+                "editor.action.indentLines"
+            ]
+        },
+        {
+            "before": [
+                "<"
+            ],
+            "commands": [
+                "editor.action.outdentLines"
+            ]
+        },
+    ],
+    "team.showWelcomeMessage": false,
+    "kite.showWelcomeNotificationOnStartup": false,
+    "git.autofetch": true,
+    "terminal.integrated.inheritEnv": false,
+    "window.zoomLevel": 1,
+    "python.languageServer": "Microsoft",
+}
