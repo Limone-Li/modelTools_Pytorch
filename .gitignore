@@ -1,6 +1,7 @@
 # Mac Ds Store
 */.DS_Store
 .DS_Store
+tmp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

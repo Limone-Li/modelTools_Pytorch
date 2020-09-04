@@ -7,11 +7,12 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
 from .utils.progressBar import ProgressBar
+from dataTool import ConceptDataset
 
 
 class BaseModel(abc.ABC):
-    """Abstract base class for Network models
-    """
+    '''Abstract base class for Network models.
+    '''
     def __init__(
         self,
         model,
@@ -25,9 +26,9 @@ class BaseModel(abc.ABC):
 
 
 class ModelTool(BaseModel):
-    """ModelTool
-    A tool for auto train model.
-    """
+    '''Model Tool
+    Some tools for auto train model.
+    '''
     def __init__(
         self,
         model,
@@ -79,7 +80,12 @@ class ModelTool(BaseModel):
         }
         torch.save(state, file_path)
 
-    def auto_train(self, train_loader, test_loader, epoch_max=200):
+    def auto_train(self,
+                   train_loader,
+                   test_loader,
+                   epoch_max=200,
+                   lr_alpha=0.3,
+                   lr_beta=0.7):
         """Auto train
         """
         self._model = self._model.to(self._device)
@@ -105,16 +111,22 @@ class ModelTool(BaseModel):
 
             acc = 100 * test_loss['correct'] / test_loss['total']
             acc_t = 100 * train_loss['correct'] / test_loss['total']
-            scheduler.step(acc_t * 0.3 + acc * 0.7)
+            scheduler.step(acc_t * lr_alpha + acc * lr_beta)
             if self._best_accuracy < acc:
                 self._best_accuracy = acc
                 self.save(self._file_path)
 
-    def _test_step(self, data_loader, criterion, optimizer):
+    def _test_step(self, data_loader, criterion=None, optimizer=None):
         model = self._model
         model.eval()
         total_loss, correct, total = 0, 0, 0
         device = self._device
+
+        if criterion == None:
+            criterion = self._criterion
+
+        if optimizer == None:
+            optimizer = self._optimizer
 
         pb = ProgressBar()
         pb.start()
