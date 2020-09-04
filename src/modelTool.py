@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
 from .utils.progressBar import ProgressBar
-from source.tools.dataTool import ConceptDataset
 
 
 class BaseModel(abc.ABC):
