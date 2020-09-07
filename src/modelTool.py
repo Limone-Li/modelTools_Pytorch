@@ -28,10 +28,25 @@ class BaseModel(abc.ABC):
     def name(self):
         return self.BaseModel.__name__
 
+    def eval(self, *args, **kwargs):
+        ''' Sets wrapped model to eval mode as is done in pytorch.
+        '''
+        return self.model.eval(*args, **kwargs)
+
+    def train(self, *args, **kwargs):
+        ''' Sets wrapped model to train mode as is done in pytorch.
+        '''
+        return self.model.train(*args, **kwargs)
+
+    def __call__(self, x):
+        ''' Calls prediction on wrapped model pytorch.
+        '''
+        ends = self._model(x)
+        return ends
+
 
 class ModelTool(BaseModel):
-    '''Model Tool。
-    Some tools for auto train model.
+    '''Some tools for auto training model.
 
     Attributes:
         model (torch.nn.module) : A pytorch model.
@@ -65,11 +80,12 @@ class ModelTool(BaseModel):
         self._optimizer = optimizer
         self._best_accuracy = best_accuracy
         self._epoch = epoch
+        self._bottleneck_name = self.get_bottleneck_name()
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     def resume(self, file_path=None):
-        """Resume model state from file_path.
-        """
+        '''Resume model state from file_path.
+        '''
         if file_path is None:
             file_path = self._file_path
         print('===> Resume model from :', file_path)
@@ -81,8 +97,8 @@ class ModelTool(BaseModel):
         self._optimizer = state['optimizer']
 
     def save(self, file_path=None):
-        """Save Model to file_path.
-        """
+        '''Save Model to file_path.
+        '''
         if file_path is None:
             file_path = self._file_path
         print('===> Save model to ', file_path)
@@ -107,7 +123,7 @@ class ModelTool(BaseModel):
                    lr_alpha=0.3,
                    lr_beta=0.7,
                    verbose=True):
-        """Auto train.
+        '''Auto train.
 
         Attributes:
             train_loader (torch.utils.data.DataLoader) : The DataLoader of train set.
@@ -117,7 +133,7 @@ class ModelTool(BaseModel):
             lr_beta (float, optional) : The beat of learning rate.
             verbose (bool, optional) : If true, the message of training process will show in terminal.
 
-        """
+        '''
         self._model = self._model.to(self._device)
         if self._device == 'cuda':
             self._model = nn.DataParallel(self._model)
@@ -224,7 +240,10 @@ class ModelTool(BaseModel):
             self._best_accuracy) + '\nEpoch: ' + str(
                 self._epoch) + '*-------------*'
 
-    def add_forward_hook(self, hook_function=None):
+    def add_forward_hook(self,
+                         bottlenecks_tensors,
+                         bn_names=None,
+                         hook_function=None):
         def save_activation(name):
             ''' Creates hooks to the activations
             Args:
@@ -233,16 +252,15 @@ class ModelTool(BaseModel):
             def hook(mod, inp, out):
                 ''' Saves the activation hook to dictionary
                 '''
-                if name not in self.bottlenecks_tensors.keys():
-                    self.bottlenecks_tensors[name] = []
-                self.bottlenecks_tensors[name].append(out)
+                if name not in bottlenecks_tensors.keys():
+                    bottlenecks_tensors[name] = []
+                bottlenecks_tensors[name].append(out)
 
             return hook
 
         handles = []
         for name, mod in self.model.named_modules():
-            if (self.bottlenecks is not None) and (name
-                                                   not in self.bottlenecks):
+            if (bn_names is not None) and (name not in bn_names):
                 continue
             if hook_function is None:
                 handle = mod.register_forward_hook(save_activation(name))
@@ -251,19 +269,27 @@ class ModelTool(BaseModel):
             handles.append(handle)
         return handles
 
-    def run_examples(self, examples, transform, verbose=True):
+    def run_examples(self, examples, transform, bn_names=None, verbose=True):
         ''' Generating the activations and ends from the images.
 
         Attributes:
             examples (array) : a numpy class which storing images, e.g. [32, 32, 3].
             transform (torchvision.transforms) : A transform from torchvision.transforms.
+            bn_names (list, optional) : Which bottleneck's activation map stored, if None, all of layers will
+                store in bottleneck_tensor.
+            verbose (bool, optional) : Showing message in terminal.
+
+        Returns:
+            activation (dict) : A dictionary likes : {'bottleneck name': activation map}
+            ends (List) : The list of tensor (Model output).
+            inputs (List) : The list of input data.
         '''
         # Initialize the tensor Dict
         model = self._model
         bottlenecks_tensors = {}
         ends = []
         inputs = []
-        handles = self.add_forward_hook()
+        handles = self.add_forward_hook(bottlenecks_tensors, bn_names)
 
         model.to(self._device)
 
@@ -277,41 +303,32 @@ class ModelTool(BaseModel):
             ends.append(model(batch))
             if verbose:
                 print("[{}/{}]".format(idx + 1, len(concept_loader)))
-            if idx > 50:
-                break
 
         for handle in handles:
             handle.remove()
 
         return bottlenecks_tensors, ends, inputs
 
-    def eval(self, *args, **kwargs):
-        """ Sets wrapped model to eval mode as is done in pytorch.
-        """
-        self.model.eval(*args, **kwargs)
-
-    def train(self, *args, **kwargs):
-        """ Sets wrapped model to train mode as is done in pytorch.
-        """
-        self.model.train(*args, **kwargs)
-
-    def __call__(self, x):
-        """ Calls prediction on wrapped model pytorch.
-        """
-        ends = self._model(x)
-        return ends
+    def get_bottleneck_name(self):
+        '''Getting the name of model's bottleneck. Warning: the first item in names is ''.
+        '''
+        model = self._model
+        names = []
+        for name, mode in model.named_modules():
+            names.append(name)
+        return names
 
     def label_to_id(self, label):
-        """Convert label (string) to index in the logit layer (id).
+        '''Convert label (string) to index in the logit layer (id).
         Override this method if label to id mapping is known. Otherwise,
         default id 0 is used.
-        """
+        '''
         print('label_to_id undefined. Defaults to returning 0.')
         return 0
 
     def id_to_label(self, idx):
-        """Convert index in the logit layer (id) to label (string).
+        '''Convert index in the logit layer (id) to label (string).
         Override this method if id to label mapping is known.
-        """
+        '''
         print('id_to_label undefined. Defaults to returning 0.')
         return '0'

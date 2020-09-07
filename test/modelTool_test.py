@@ -74,7 +74,7 @@ class TestmodelTool(unittest.TestCase):
         self.test_loader = DataLoader(self.test_set, 128)
 
     def test_autotrain(self):
-        if (Path.exists(self.file_path) is False):
+        if (Path(self.file_path).exists() is False):
             self.mt.auto_train(self.train_loader,
                                self.test_loader,
                                epoch_max=1)
@@ -84,6 +84,9 @@ class TestmodelTool(unittest.TestCase):
 
     def test_save(self):
         self.mt.save()
+
+    def test_get_bottleneck_name(self):
+        self.assertEqual(self.mt._bottleneck_name[1], 'features')
 
 
 if __name__ == '__main__':
