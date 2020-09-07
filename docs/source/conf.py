@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath('../../src'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'ModelTool-Pytorch'
+project = 'Model Tool for Pytorch'
 copyright = '2020, Lemon_bear'
 author = 'Lemon_bear'
 

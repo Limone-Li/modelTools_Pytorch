@@ -7,11 +7,15 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
 from .utils.progressBar import ProgressBar
-from dataTool import ConceptDataset
+from .dataTool import iDataset
 
 
 class BaseModel(abc.ABC):
     '''Abstract base class for Network models.
+
+    Attributes:
+        model (torch.nn.module) : A Pytorch Model.
+        model_name (str) : The name of Model.
     '''
     def __init__(
         self,
@@ -26,8 +30,24 @@ class BaseModel(abc.ABC):
 
 
 class ModelTool(BaseModel):
-    '''Model Tool
+    '''Model Tool。
     Some tools for auto train model.
+
+    Attribute:
+        model (torch.nn.module) : A pytorch model.
+        model_name (str) : The name of model. 
+        file_path (str) : The path where model saved.
+        criterion (torch.nn, optional) : If 'None', this tools will auto make a nn.CrossEntropyLoss() to train model.
+        optimizer (torch.optim, optional) : if 'None', this tools will auto build a optim.SGD(self._model.parameters(),
+            lr=0.05, weight_decay=5e-4) to train model.
+        best_accuracy (float, optional) : This attribute is used to resume model. If a accuracy in any step over
+            best_accuracy, tools will auto save model to 'file_path' and record accuracy.
+        epoch (int, optional) : Same like above.
+
+    Example:
+        >>> model = torchvision.model.vgg16();
+        >>> mt = ModelTool(model, 'vgg16', './checkpoint/vgg16.pth')
+        >>> mt.auto_train(train_loader, test_loader)
     '''
     def __init__(
         self,
@@ -122,10 +142,10 @@ class ModelTool(BaseModel):
         total_loss, correct, total = 0, 0, 0
         device = self._device
 
-        if criterion == None:
+        if criterion is None:
             criterion = self._criterion
 
-        if optimizer == None:
+        if optimizer is None:
             optimizer = self._optimizer
 
         pb = ProgressBar()
@@ -218,7 +238,7 @@ class ModelTool(BaseModel):
 
         self.model.to(self.device)
 
-        concept_dataset = ConceptDataset(images=examples, transform=transform)
+        concept_dataset = iDataset(images=examples, transform=transform)
         concept_loader = DataLoader(concept_dataset)
         for idx, batch in enumerate(concept_loader):
             if idx >= max_examples:
