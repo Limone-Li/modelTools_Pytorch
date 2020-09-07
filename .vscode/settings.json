@@ -99,4 +99,5 @@
     "terminal.integrated.inheritEnv": false,
     "window.zoomLevel": 1,
     "python.languageServer": "Microsoft",
+    "python.dataScience.jupyterServerURI": "local",
 }
