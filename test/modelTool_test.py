@@ -77,13 +77,16 @@ class TestmodelTool(unittest.TestCase):
         if (Path(self.file_path).exists() is False):
             self.mt.auto_train(self.train_loader,
                                self.test_loader,
-                               epoch_max=1)
+                               epoch_max=1,
+                               verbose=True)
 
     def test_resume(self):
         self.mt.resume()
+        print(self.mt)
 
     def test_save(self):
-        self.mt.save()
+        if (Path(self.file_path).exists() is False):
+            self.mt.save()
 
     def test_get_bottleneck_name(self):
         self.assertEqual(self.mt._bottleneck_name[0], '')

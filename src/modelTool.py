@@ -122,6 +122,7 @@ class ModelTool(BaseModel):
                    epoch_max=200,
                    lr_alpha=0.3,
                    lr_beta=0.7,
+                   save_epoch=0,
                    verbose=True):
         '''Auto train.
 
@@ -131,6 +132,8 @@ class ModelTool(BaseModel):
             epoch_max (int, optional) : The max epoch of training model.
             lr_alpha (float, optional) : The alpha of learning rate.
             lr_beta (float, optional) : The beat of learning rate.
+            save_epoch (int, optional) : If save_epoch not equal 0, every save_epoch, tools will save model to
+                file_path.
             verbose (bool, optional) : If true, the message of training process will show in terminal.
 
         '''
@@ -148,7 +151,7 @@ class ModelTool(BaseModel):
 
         scheduler = lr_scheduler.ReduceLROnPlateau(self._optimizer)
 
-        for self._epoch in range(self._epoch + 1, self._epoch + epoch_max):
+        for self._epoch in range(self._epoch + 1, self._epoch + epoch_max + 1):
             print('Epoch: ', self._epoch)
             train_loss = self._train_step(train_loader, self._criterion,
                                           self._optimizer, verbose)
@@ -161,6 +164,8 @@ class ModelTool(BaseModel):
             if self._best_accuracy < acc:
                 self._best_accuracy = acc
                 self.save(self._file_path)
+            if save_epoch > 0 and self._epoch % save_epoch == 0:
+                self.save(self._file_path + ",epoch:" + str(self._epoch))
 
     def _test_step(self,
                    data_loader,
@@ -238,7 +243,7 @@ class ModelTool(BaseModel):
     def __str__(self):
         return '*-------------*\nModel Name: ' + self._model_name + '\nAccuracy: ' + str(
             self._best_accuracy) + '\nEpoch: ' + str(
-                self._epoch) + '*-------------*'
+                self._epoch) + '\n*-------------*'
 
     def add_forward_hook(self,
                          bottlenecks_tensors,
