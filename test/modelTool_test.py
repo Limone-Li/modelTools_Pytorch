@@ -86,7 +86,16 @@ class TestmodelTool(unittest.TestCase):
         self.mt.save()
 
     def test_get_bottleneck_name(self):
+        self.assertEqual(self.mt._bottleneck_name[0], '')
         self.assertEqual(self.mt._bottleneck_name[1], 'features')
+
+    def test_run_examples(self):
+        tf = transforms.Compose([transforms.ToTensor()])
+        test_image = np.random.randint(0, 255, size=(10, 32, 32))
+        test_image = np.uint8(test_image)
+        ac, end, inp = self.mt.run_examples(test_image,
+                                            transform=tf,
+                                            verbose=False)
 
 
 if __name__ == '__main__':

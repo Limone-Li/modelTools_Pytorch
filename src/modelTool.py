@@ -259,7 +259,7 @@ class ModelTool(BaseModel):
             return hook
 
         handles = []
-        for name, mod in self.model.named_modules():
+        for name, mod in self._model.named_modules():
             if (bn_names is not None) and (name not in bn_names):
                 continue
             if hook_function is None:
@@ -269,12 +269,16 @@ class ModelTool(BaseModel):
             handles.append(handle)
         return handles
 
-    def run_examples(self, examples, transform, bn_names=None, verbose=True):
+    def run_examples(self,
+                     examples,
+                     transform=None,
+                     bn_names=None,
+                     verbose=True):
         ''' Generating the activations and ends from the images.
 
         Attributes:
             examples (array) : a numpy class which storing images, e.g. [32, 32, 3].
-            transform (torchvision.transforms) : A transform from torchvision.transforms.
+            transform (torchvision.transforms, optional) : A transform from torchvision.transforms.
             bn_names (list, optional) : Which bottleneck's activation map stored, if None, all of layers will
                 store in bottleneck_tensor.
             verbose (bool, optional) : Showing message in terminal.
@@ -293,7 +297,7 @@ class ModelTool(BaseModel):
 
         model.to(self._device)
 
-        concept_dataset = iDataset(images=examples, transform=transform)
+        concept_dataset = iDataset(images=examples, tf=transform)
         concept_loader = DataLoader(concept_dataset)
         for idx, batch in enumerate(concept_loader):
             batch = Variable(batch, requires_grad=True)

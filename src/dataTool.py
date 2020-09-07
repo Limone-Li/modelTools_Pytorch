@@ -40,5 +40,5 @@ class iDataset(Dataset):
         image = self.images[index]
         image = Image.fromarray(image)
         if self.tf is not None:
-            image = self.transform(image)
+            image = self.tf(image)
         return image
