@@ -27,8 +27,8 @@ class iDataset(Dataset):
         '''Initialization of iDataset.
 
         Attributes:
-            images: a numpy class store images, e.g. [32, 32, 3].
-            transform: torchvision.transforms
+            images (array) : a numpy class store images, e.g. [32, 32, 3].
+            transform (torchvision.transforms): torchvision.transforms
         '''
         self.images = images
         self.tf = tf

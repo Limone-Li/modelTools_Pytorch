@@ -10,6 +10,9 @@ Welcome to Model Tool for Pytorch's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   src
+   src.utils
+
 
 
 Indices and tables

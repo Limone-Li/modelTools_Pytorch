@@ -33,7 +33,7 @@ class ModelTool(BaseModel):
     '''Model Tool。
     Some tools for auto train model.
 
-    Attribute:
+    Attributes:
         model (torch.nn.module) : A pytorch model.
         model_name (str) : The name of model.
         file_path (str) : The path where model saved.
@@ -220,9 +220,9 @@ class ModelTool(BaseModel):
         return {'loss': total_loss, 'correct': correct, 'total': total}
 
     def __str__(self):
-        return '*--------*\nModel Name: ' + self._model_name + '\nAccuracy: ' + str(
+        return '*-------------*\nModel Name: ' + self._model_name + '\nAccuracy: ' + str(
             self._best_accuracy) + '\nEpoch: ' + str(
-                self._epoch) + '*--------*'
+                self._epoch) + '*-------------*'
 
     def add_forward_hook(self, hook_function=None):
         def save_activation(name):
@@ -251,55 +251,55 @@ class ModelTool(BaseModel):
             handles.append(handle)
         return handles
 
-    def run_examples(self,
-                     examples,
-                     transform,
-                     max_examples=500,
-                     verbose=False):
-        """ Generates the concept activations and ends from the imgs
-        """
-        # Initialize the tensor Dict
-        self.bottlenecks_tensors = {}
-        self.ends = []
-        self.inputs = []
-        handle = self.add_forward_hook()
+    def run_examples(self, examples, transform, verbose=True):
+        ''' Generating the activations and ends from the images.
 
-        self.model.to(self.device)
+        Attributes:
+            examples (array) : a numpy class which storing images, e.g. [32, 32, 3].
+            transform (torchvision.transforms) : A transform from torchvision.transforms.
+        '''
+        # Initialize the tensor Dict
+        model = self._model
+        bottlenecks_tensors = {}
+        ends = []
+        inputs = []
+        handles = self.add_forward_hook()
+
+        model.to(self._device)
 
         concept_dataset = iDataset(images=examples, transform=transform)
         concept_loader = DataLoader(concept_dataset)
         for idx, batch in enumerate(concept_loader):
-            if idx >= max_examples:
-                break
             batch = Variable(batch, requires_grad=True)
-            batch = batch.to(self.device)
-            self.inputs.append(batch)
+            batch = batch.to(self._device)
+            inputs.append(batch)
             # need to run batch through the model to capture activations
-            self.ends.append(self.model(batch))
+            ends.append(model(batch))
             if verbose:
                 print("[{}/{}]".format(idx + 1, len(concept_loader)))
             if idx > 50:
                 break
 
-        handle.remove()
+        for handle in handles:
+            handle.remove()
 
-        return self.bottlenecks_tensors, self.ends, self.inputs
+        return bottlenecks_tensors, ends, inputs
 
-    def eval(self):
+    def eval(self, *args, **kwargs):
         """ Sets wrapped model to eval mode as is done in pytorch.
         """
-        self.model.eval()
+        self.model.eval(*args, **kwargs)
 
-    def train(self):
+    def train(self, *args, **kwargs):
         """ Sets wrapped model to train mode as is done in pytorch.
         """
-        self.model.train()
+        self.model.train(*args, **kwargs)
 
     def __call__(self, x):
         """ Calls prediction on wrapped model pytorch.
         """
-        self.ends = self.model(x)
-        return self.ends
+        ends = self._model(x)
+        return ends
 
     def label_to_id(self, label):
         """Convert label (string) to index in the logit layer (id).

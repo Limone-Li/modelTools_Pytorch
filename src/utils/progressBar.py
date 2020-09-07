@@ -80,14 +80,3 @@ class ProgressBar(object):
             if id == 0:
                 break
         return res
-
-
-def test():
-    a = ProgressBar()
-    a.start()
-    for i in range(11):
-        time.sleep(1)
-        a.print(i, 10, 'hello')
-
-
-# test()
