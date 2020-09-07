@@ -35,7 +35,7 @@ class ModelTool(BaseModel):
 
     Attribute:
         model (torch.nn.module) : A pytorch model.
-        model_name (str) : The name of model. 
+        model_name (str) : The name of model.
         file_path (str) : The path where model saved.
         criterion (torch.nn, optional) : If 'None', this tools will auto make a nn.CrossEntropyLoss() to train model.
         optimizer (torch.optim, optional) : if 'None', this tools will auto build a optim.SGD(self._model.parameters(),
@@ -68,7 +68,7 @@ class ModelTool(BaseModel):
         self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     def resume(self, file_path=None):
-        """Resume model state form file_path
+        """Resume model state from file_path.
         """
         if file_path is None:
             file_path = self._file_path
@@ -81,7 +81,7 @@ class ModelTool(BaseModel):
         self._optimizer = state['optimizer']
 
     def save(self, file_path=None):
-        """Save Model from file_path
+        """Save Model to file_path.
         """
         if file_path is None:
             file_path = self._file_path
@@ -105,8 +105,18 @@ class ModelTool(BaseModel):
                    test_loader,
                    epoch_max=200,
                    lr_alpha=0.3,
-                   lr_beta=0.7):
-        """Auto train
+                   lr_beta=0.7,
+                   verbose=True):
+        """Auto train.
+
+        Attributes:
+            train_loader (torch.utils.data.DataLoader) : The DataLoader of train set.
+            test_loader (torch.utils.data.DataLoader) : The DataLoader of test set.
+            epoch_max (int, optional) : The max epoch of training model.
+            lr_alpha (float, optional) : The alpha of learning rate.
+            lr_beta (float, optional) : The beat of learning rate.
+            verbose (bool, optional) : If true, the message of training process will show in terminal.
+
         """
         self._model = self._model.to(self._device)
         if self._device == 'cuda':
@@ -125,9 +135,9 @@ class ModelTool(BaseModel):
         for self._epoch in range(self._epoch + 1, self._epoch + epoch_max):
             print('Epoch: ', self._epoch)
             train_loss = self._train_step(train_loader, self._criterion,
-                                          self._optimizer)
+                                          self._optimizer, verbose)
             test_loss = self._test_step(test_loader, self._criterion,
-                                        self._optimizer)
+                                        self._optimizer, verbose)
 
             acc = 100 * test_loss['correct'] / test_loss['total']
             acc_t = 100 * train_loss['correct'] / test_loss['total']
@@ -136,7 +146,11 @@ class ModelTool(BaseModel):
                 self._best_accuracy = acc
                 self.save(self._file_path)
 
-    def _test_step(self, data_loader, criterion=None, optimizer=None):
+    def _test_step(self,
+                   data_loader,
+                   criterion=None,
+                   optimizer=None,
+                   verbose=True):
         model = self._model
         model.eval()
         total_loss, correct, total = 0, 0, 0
@@ -161,15 +175,20 @@ class ModelTool(BaseModel):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            msg = 'Loss: {:.3f} | Acc: {:.3f} % ({:d}/{:d})'.format(
-                total_loss / (batch_idx + 1), 100. * correct / total, correct,
-                total)
+            if verbose:
+                msg = 'Loss: {:.3f} | Acc: {:.3f} % ({:d}/{:d})'.format(
+                    total_loss / (batch_idx + 1), 100. * correct / total,
+                    correct, total)
 
-            pb.print(batch_idx + 1, len(data_loader), msg)
+                pb.print(batch_idx + 1, len(data_loader), msg)
 
         return {'loss': total_loss, 'correct': correct, 'total': total}
 
-    def _train_step(self, data_loader, criterion, optimizer):
+    def _train_step(self,
+                    data_loader,
+                    criterion=None,
+                    optimizer=None,
+                    verbose=True):
         model = self._model
         model.train()
         total_loss, correct, total = 0, 0, 0
@@ -191,37 +210,46 @@ class ModelTool(BaseModel):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            msg = 'Loss: {:.3f} | Acc: {:.3f} % ({:d}/{:d})'.format(
-                total_loss / (batch_idx + 1), 100. * correct / total, correct,
-                total)
+            if verbose:
+                msg = 'Loss: {:.3f} | Acc: {:.3f} % ({:d}/{:d})'.format(
+                    total_loss / (batch_idx + 1), 100. * correct / total,
+                    correct, total)
 
-            pb.print(batch_idx + 1, len(data_loader), msg)
+                pb.print(batch_idx + 1, len(data_loader), msg)
 
         return {'loss': total_loss, 'correct': correct, 'total': total}
 
     def __str__(self):
-        return '' + self._model_name + ' ' + str(
-            self._best_accuracy) + ' ' + str(self._epoch)
+        return '*--------*\nModel Name: ' + self._model_name + '\nAccuracy: ' + str(
+            self._best_accuracy) + '\nEpoch: ' + str(
+                self._epoch) + '*--------*'
 
-    def add_forward_hook(self):
+    def add_forward_hook(self, hook_function=None):
         def save_activation(name):
-            """ Creates hooks to the activations
+            ''' Creates hooks to the activations
             Args:
                 name (string): Name of the layer to hook into
-            """
+            '''
             def hook(mod, inp, out):
-                """ Saves the activation hook to dictionary
-                """
+                ''' Saves the activation hook to dictionary
+                '''
                 if name not in self.bottlenecks_tensors.keys():
                     self.bottlenecks_tensors[name] = []
                 self.bottlenecks_tensors[name].append(out)
 
             return hook
 
+        handles = []
         for name, mod in self.model.named_modules():
-            if self.bottlenecks is not None and name not in self.bottlenecks:
+            if (self.bottlenecks is not None) and (name
+                                                   not in self.bottlenecks):
                 continue
-            mod.register_forward_hook(save_activation(name))
+            if hook_function is None:
+                handle = mod.register_forward_hook(save_activation(name))
+            else:
+                handle = mod.register_forward_hook(hook_function(name))
+            handles.append(handle)
+        return handles
 
     def run_examples(self,
                      examples,
