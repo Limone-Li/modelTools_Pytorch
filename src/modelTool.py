@@ -152,7 +152,8 @@ class ModelTool(BaseModel):
         scheduler = lr_scheduler.ReduceLROnPlateau(self._optimizer)
 
         for self._epoch in range(self._epoch + 1, self._epoch + epoch_max + 1):
-            print('Epoch: ', self._epoch)
+            if verbose:
+                print('Epoch: ', self._epoch)
             train_loss = self._train_step(train_loader, self._criterion,
                                           self._optimizer, verbose)
             test_loss = self._test_step(test_loader, self._criterion,
@@ -165,7 +166,7 @@ class ModelTool(BaseModel):
                 self._best_accuracy = acc
                 self.save(self._file_path)
             if save_epoch > 0 and self._epoch % save_epoch == 0:
-                self.save(self._file_path + ",epoch:" + str(self._epoch))
+                self.save(self._file_path.replace('.pth', "-epoch-" + str(self._epoch) + '.pth'))
 
     def _test_step(self,
                    data_loader,
