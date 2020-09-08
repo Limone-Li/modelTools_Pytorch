@@ -9,7 +9,7 @@ import numpy as np
 import unittest
 from pathlib import Path
 
-from src.modelTool import ModelTool
+from tools.modelTool import ModelTool
 
 
 def make_layers(cfg, batch_norm=False):

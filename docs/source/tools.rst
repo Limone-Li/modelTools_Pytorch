@@ -1,5 +1,5 @@
-src package
-===========
+tools package
+=============
 
 Subpackages
 -----------
@@ -7,23 +7,23 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   src.utils
+   tools.utils
 
 Submodules
 ----------
 
-src.dataTool module
--------------------
+tools.dataTool module
+---------------------
 
-.. automodule:: src.dataTool
+.. automodule:: tools.dataTool
    :members:
    :undoc-members:
    :show-inheritance:
 
-src.modelTool module
---------------------
+tools.modelTool module
+----------------------
 
-.. automodule:: src.modelTool
+.. automodule:: tools.modelTool
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +31,7 @@ src.modelTool module
 Module contents
 ---------------
 
-.. automodule:: src
+.. automodule:: tools
    :members:
    :undoc-members:
    :show-inheritance:

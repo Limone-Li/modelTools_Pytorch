@@ -5,7 +5,15 @@ Some tools of Pytorch model
 
 Auto train a pytorch model.
 
+<<<<<<< HEAD
 
+=======
+    model = models.VGG(make_layers(cfgs['A']), 10)
+    model_name = 'vgg'
+    file_path = '../tmp/vgg.pth'
+    mt = ModelTool(model, model_name, file_path)
+    mt.auto_train(train_loader, test_loader, epoch_max=20, save_epoch=5)
+>>>>>>> 8b09babbc7ce4529ae6936416c3e61dcae9b2726
 
 ## SP. Command-line
 
