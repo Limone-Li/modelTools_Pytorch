@@ -5,14 +5,14 @@ Some tools of Pytorch model
 
 Auto train a pytorch model.
 
-    
+
 
 ## SP. Command-line
 
 __Rebuild sphinx doc.__
 
     cd docs
-    sphinx-apidoc -o source '../src' -f
+    sphinx-apidoc -o source '../tools' -f
     make clean
     make html
 
